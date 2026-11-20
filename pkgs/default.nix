@@ -84,6 +84,20 @@ in
     ]
   );
 
+  # Limiti di potenza, moltiplicatori turbo, lock del BIOS, TjMax, PROCHOT: la base dell'overclock
+  lab-limits = mk "lab-limits" (
+    with pkgs;
+    [
+      coreutils
+      gawk
+      gnugrep
+      gnused
+      kmod
+      msr-tools
+      pciutils
+    ]
+  );
+
   # Cosa si è accumulato nella root effimera dall'ultimo avvio (stato non dichiarato)
   lab-fs-diff = mk "lab-fs-diff" (
     with pkgs;

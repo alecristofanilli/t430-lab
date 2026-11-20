@@ -34,6 +34,7 @@ ipotesi, misura e conclusione, e deve restare reversibile.
 | `lab-atlas-diff A B` | differenze tra due atlas, binari compresi (byte e bit cambiati) |
 | `lab-ec-watch [s] [durata]` | registra ogni byte della RAM dell'EC che cambia (voce `deep`) |
 | `lab-power-trace [s] [durata]` | CSV di consumo: batteria + RAPL package/core/GPU + resto stimato |
+| `lab-limits` | decodifica PL1/PL2 (MSR e MMIO), lock del BIOS, moltiplicatori turbo, TjMax, PROCHOT, frequenze GPU |
 | `nix develop .#re` | reverse engineering: Ghidra, radare2, rizin, ImHex, UEFITool, binwalk |
 | `nvd diff /run/booted-system /run/current-system` | cosa è cambiato tra generazioni |
 
@@ -55,7 +56,10 @@ kernel su misura, ottimizzazione automatica, audit del firmware, DRAM. Lavora su
 ## Limiti (gli unici)
 - Non toccare partizioni, LUKS, `/persist/secrets` e i dati in `/home` senza chiedere ad Alessandro.
 - Firmware e hardware: solo lui. Puoi leggere la flash SPI (`flashrom -r`), mai scriverla.
-- Scritture su registri EC o MSR: solo per i filoni 2 e 4 del programma, solo con un watchdog che ripristina
+- Overclock e limiti (filone 9): scrivere PL1/PL2, moltiplicatori turbo e frequenze GPU è permesso, sempre con
+  `lab-limits` prima e dopo, con un watchdog termico attivo e con valori che tornano di default al riavvio
+  (mai persistenti finché non sono validati da almeno 1 ora di stress-ng senza throttling anomalo).
+- Scritture su altri registri EC o MSR: solo per i filoni 2 e 4 del programma, solo con un watchdog che ripristina
   il controllo automatico della ventola e una soglia termica (es. 90 °C) che interrompe l'esperimento.
   Prima di scrivere un MSR mai provato, annota in NOTEBOOK.md cosa ti aspetti e come torni indietro.
 - Niente stato imperativo fuori dal repo (`nix-env -i`, file a mano in /etc): se serve, è Nix.
@@ -74,4 +78,5 @@ kernel su misura, ottimizzazione automatica, audit del firmware, DRAM. Lavora su
 - [ ] Osservabilità: bpftrace/perf, flamegraph di boot e workload tipici
 - [ ] Tema coerente (stylix) e waybar con metriche del laboratorio (W, °C, scheduler attivo)
 - [ ] Integrazione col cluster Kubernetes su Raspberry (kubectl, k9s, WireGuard)
+- [ ] `lab-limits` alla prima accensione: PL1/PL2 sono bloccati? La CPU è una XM con turbo programmabile?
 - [ ] Generatore di report: dai JSON di ~/lab/results a grafici e a una pagina riassuntiva

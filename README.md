@@ -9,7 +9,7 @@ flake.nix
 ├─ modules/           base · impermanence · desktop (sway) · home (home-manager)
 │                     power (TLP, thinkfan) · performance · experiments · deep · research · lab · agent
 ├─ pkgs/ + bench/     lab-snapshot · lab-compare · lab-try · lab-keep · lab-fs-diff
-│                     lab-atlas · lab-atlas-diff · lab-ec-watch · lab-power-trace
+│                     lab-atlas · lab-atlas-diff · lab-ec-watch · lab-power-trace · lab-limits
 ├─ shells/            datascience · julia · r · re · bench
 ├─ docs/              programma di ricerca, hardware e firmware, progetti di riferimento
 ├─ CLAUDE.md          metodo e backlog per Claude sulla macchina

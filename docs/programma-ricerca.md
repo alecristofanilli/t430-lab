@@ -5,7 +5,7 @@ documentarla in modo riproducibile e usare quella conoscenza per customizzazioni
 in modo così sistematico. Ogni filone produce **dati grezzi versionati**, **un'analisi** e **una modifica
 al sistema** (oppure la dimostrazione che una modifica non serve).
 
-Ordine consigliato: 1 → 2 → 3 → 4 in parallelo agli altri; 5–8 quando la base è solida.
+Ordine consigliato: 1 → 2 → 3 → 4 in parallelo agli altri; 5–10 quando la base è solida.
 
 ---
 
@@ -93,6 +93,41 @@ e la può trovare un agente da solo?
 - Configurazione del controller di memoria (inteltool) e banda/latenza misurate.
 - Test di affidabilità con `memtester` e con un passaggio completo di MemTest86 dalla chiavetta: base per un
   eventuale tuning dei timing con coreboot.
+
+## 9. Overclock, limiti di potenza e frequenze
+**Domanda:** quanta prestazione c'è davvero nel T430 oltre i limiti di fabbrica, e a che costo termico ed energetico?
+
+Cosa si può e non si può fare su Ivy Bridge mobile:
+- **Moltiplicatore**: bloccato sulle CPU normali (i5, i7 QM). Sbloccato solo sulle **XM** (i7-3920XM, 3940XM):
+  con quelle i moltiplicatori turbo (MSR 0x1AD) si alzano da software. `lab-limits` dice se la tua è programmabile.
+- **Limiti di potenza (PL1/PL2)**: si alzano da software (MSR 0x610 e registro MMIO in MCHBAR) **se il BIOS non li
+  ha bloccati** (bit 63). Il BIOS Lenovo di solito li blocca; 1vyrain o coreboot li sbloccano. Con limiti più
+  alti il turbo dura di più sotto carico prolungato: è il guadagno più concreto anche su CPU non XM.
+- **Undervolt**: in pratica non disponibile da software su Ivy Bridge (l'offset di tensione via MSR arriva con Haswell).
+- **GPU HD 4000**: si può fissare la frequenza minima e massima fino al massimo hardware (RP0), non oltre.
+- **RAM**: il BIOS Lenovo arriva a DDR3-1600. Frequenze e timing più spinti passano da coreboot (raminit nativo),
+  quindi dalla fase hardware.
+- **Il vero limite è termico ed elettrico**: dissipatore e pasta (filone 4), alimentatore da 90 W (con quello da
+  65 W una quad-core va in PROCHOT sotto carico), batteria in buono stato.
+
+Metodo: `lab-limits` → alzare un parametro alla volta (non persistente) → stress-ng + `lab-power-trace` + s-tui per
+almeno un'ora → frequenza sostenuta, temperatura, watt e prestazioni per watt rispetto al default.
+Prodotto: un profilo "oc" come specialisation, con la curva prestazioni/temperatura/consumo che lo giustifica.
+
+## 10. Tutto il sistema compilato per Ivy Bridge
+**Domanda:** cosa cambia se ogni singolo binario del sistema è compilato per questa CPU?
+
+- NixOS permette di ricompilare l'intero sistema con `-march=ivybridge` impostando l'architettura della piattaforma
+  (`nixpkgs.hostPlatform = { system = "x86_64-linux"; gcc.arch = "ivybridge"; gcc.tune = "ivybridge"; }`, più
+  `gccarch-ivybridge` in `nix.settings.system-features` sulla macchina che compila). Nessuna cache binaria:
+  si ricompila tutto, dal compilatore in su.
+- Sul T430 servirebbero giorni: si delega a una macchina più potente come remote builder di Nix (o a una VM),
+  e il T430 scarica solo i risultati.
+- Varianti da confrontare: generico x86-64 (riferimento), `-march=ivybridge`, `-march=ivybridge` + LTO, e solo per
+  i pacchetti caldi (kernel, compilatori, Python/numpy, compressori, Mesa).
+- Prodotto: misure su benchmark reali (build, compressione, calcolo scientifico, tempo di avvio) che dicono se
+  ricompilare tutto vale davvero la pena, cosa raramente misurato in modo così pulito perché di solito
+  cambiano più variabili insieme. Qui cambia solo il flag del compilatore, con tutto il resto identico al bit.
 
 ---
 
