@@ -16,6 +16,8 @@
       wl-clipboard
       brightnessctl
       kanshi
+      pulseaudio # pactl, usato dai tasti del volume nel config di default
+      wmenu # menu di default di sway (Super+D è comunque rilegato a fuzzel qui sotto)
     ];
   };
 
@@ -32,8 +34,10 @@
       natural_scroll disabled
       dwt enabled
     }
-    set $term foot
-    set $menu fuzzel
+    # Le variabili del config di default sono già espanse quando questo file viene letto:
+    # per cambiare terminale e menu bisogna rilegare i tasti.
+    bindsym $mod+Return exec foot
+    bindsym $mod+d exec fuzzel
   '';
 
   services.greetd = {

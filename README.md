@@ -3,6 +3,8 @@
 Un ThinkPad T430 trasformato in laboratorio: NixOS interamente dichiarativo, root effimera,
 esperimenti di ottimizzazione misurati, e Claude come ricercatore residente con accesso completo.
 
+**Per installarlo passo per passo: [docs/guida-casa.md](docs/guida-casa.md).**
+
 ```
 flake.nix
 ├─ hosts/t430/        disko (GPT + LUKS2 + btrfs), hardware
@@ -13,7 +15,7 @@ flake.nix
 │                     lab-atlas · lab-atlas-diff · lab-ec-watch · lab-power-trace · lab-limits
 ├─ shells/            datascience · julia · r · re · bench
 ├─ archeologia/       sistemi NixOS di altre epoche avviabili in RAM
-├─ docs/              programma di ricerca, hardware e firmware, progetti di riferimento
+├─ docs/              guida d'installazione, programma di ricerca, hardware e firmware, riferimenti
 ├─ CLAUDE.md          metodo e backlog per Claude sulla macchina
 └─ NOTEBOOK.md        diario degli esperimenti
 ```

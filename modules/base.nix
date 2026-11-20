@@ -48,6 +48,9 @@
     LC_MEASUREMENT = "it_IT.UTF-8";
   };
   console.keyMap = "it";
+  # Layout italiano già nella fase di sblocco del disco (initrd): senza, la passphrase LUKS
+  # va digitata come su una tastiera americana.
+  console.earlySetup = true;
 
   # --- Rete e sicurezza -----------------------------------------------------
   networking.networkmanager.enable = true;
@@ -112,6 +115,7 @@
   # --- Strumenti di base ----------------------------------------------------
   environment.systemPackages = with pkgs; [
     git
+    gh # login GitHub al primo avvio (gh auth login)
     neovim
     tmux
     curl
