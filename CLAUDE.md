@@ -18,6 +18,8 @@ ipotesi, misura e conclusione, e deve restare reversibile.
 - `modules/experiments.nix` — specialisations: vanilla (controllo), perf, battery
 - `modules/agent.nix` — sudo senza password, turno notturno opzionale (`lab.agent.nightly`)
 - `modules/deep.nix` — strumenti di analisi a basso livello + voce GRUB `deep` (iomem=relaxed, ec_sys)
+- `modules/blackbox.nix` — scatola nera sempre attiva (bench/lab-blackbox.py)
+- `archeologia/` — sistemi NixOS di altre epoche avviabili in RAM (filone 11)
 - `modules/home.nix` — dotfile con home-manager
 - `pkgs/` + `bench/` — strumenti del laboratorio
 - `shells/` — ambienti di ricerca (`nix develop .#datascience` ecc.)
@@ -35,6 +37,7 @@ ipotesi, misura e conclusione, e deve restare reversibile.
 | `lab-ec-watch [s] [durata]` | registra ogni byte della RAM dell'EC che cambia (voce `deep`) |
 | `lab-power-trace [s] [durata]` | CSV di consumo: batteria + RAPL package/core/GPU + resto stimato |
 | `lab-limits` | decodifica PL1/PL2 (MSR e MMIO), lock del BIOS, moltiplicatori turbo, TjMax, PROCHOT, frequenze GPU |
+| `lab-blackbox-dump` | apre la scatola nera a mano (si apre già da sola su stalli e throttling) → ~/lab/blackbox |
 | `nix develop .#re` | reverse engineering: Ghidra, radare2, rizin, ImHex, UEFITool, binwalk |
 | `nvd diff /run/booted-system /run/current-system` | cosa è cambiato tra generazioni |
 
@@ -51,7 +54,9 @@ ipotesi, misura e conclusione, e deve restare reversibile.
 ## Programma di ricerca
 Il backlog qui sotto è la parte "sistema". La parte "analisi profonda" è in **docs/programma-ricerca.md**:
 atlante hardware differenziale, mappa dell'EC, modello energetico, controllo predittivo della ventola,
-kernel su misura, ottimizzazione automatica, audit del firmware, DRAM. Lavora su entrambi.
+kernel su misura, ottimizzazione automatica, audit del firmware, DRAM, overclock, sistema per Ivy Bridge.
+La **Parte II** è la sperimentazione pionieristica ed è la vera priorità del progetto: archeologia del
+software, sistema adattivo, gemello digitale, scatola nera, record d'avvio, evoluzione del kernel, paper.
 
 ## Limiti (gli unici)
 - Non toccare partizioni, LUKS, `/persist/secrets` e i dati in `/home` senza chiedere ad Alessandro.
@@ -62,6 +67,8 @@ kernel su misura, ottimizzazione automatica, audit del firmware, DRAM. Lavora su
 - Scritture su altri registri EC o MSR: solo per i filoni 2 e 4 del programma, solo con un watchdog che ripristina
   il controllo automatico della ventola e una soglia termica (es. 90 °C) che interrompe l'esperimento.
   Prima di scrivere un MSR mai provato, annota in NOTEBOOK.md cosa ti aspetti e come torni indietro.
+- **Il repo è pubblico**: mai committare dati grezzi (~/lab), dump di firmware, numeri di serie, MAC, chiavi.
+  Solo risultati aggregati e anonimizzati.
 - Niente stato imperativo fuori dal repo (`nix-env -i`, file a mano in /etc): se serve, è Nix.
 - Prima di disattivare la rete o SSH in modo permanente, chiedi.
 

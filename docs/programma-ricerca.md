@@ -5,7 +5,8 @@ documentarla in modo riproducibile e usare quella conoscenza per customizzazioni
 in modo così sistematico. Ogni filone produce **dati grezzi versionati**, **un'analisi** e **una modifica
 al sistema** (oppure la dimostrazione che una modifica non serve).
 
-Ordine consigliato: 1 → 2 → 3 → 4 in parallelo agli altri; 5–10 quando la base è solida.
+Ordine consigliato: 1 → 2 → 3 → 4 in parallelo agli altri; 5–10 quando la base è solida. La Parte II
+(11–17) può partire subito: la scatola nera è già attiva e l'archeologia è indipendente dal resto.
 
 ---
 
@@ -131,8 +132,97 @@ Prodotto: un profilo "oc" come specialisation, con la curva prestazioni/temperat
 
 ---
 
+# Parte II — Sperimentazione pionieristica
+
+I filoni 1–10 studiano e ottimizzano la macchina. Quelli che seguono provano a fare cose che, per quanto
+ne sappiamo, nessuno ha fatto in modo sistematico su un portatile. Ognuno ha una domanda, un metodo
+riproducibile e un criterio per dire se ha funzionato.
+
+## 11. Archeologia del software
+**Domanda:** sullo stesso identico hardware, cosa hanno dato e cosa hanno tolto nove anni di evoluzione del software?
+
+- **Fattibilità verificata (2026-11-20):** il Nix del 2026 valuta ancora nixpkgs release-17.09 (kernel 4.9.86).
+  Punto di partenza in `archeologia/era.nix`.
+- **Epoche:** 17.09 · 19.09 · 21.11 · 23.11 · 25.11 · unstable 2026. Per ognuna due varianti: il commit del
+  rilascio ("com'era quando è uscita") e la fine del ramo ("con tutte le patch"). Per la 17.09 è un taglio
+  storico: il rilascio è prima di Spectre e Meltdown, la fine del ramo è dopo.
+- **Avvio:** ogni epoca è un'immagine netboot (tutto in RAM), lanciata con kexec dal sistema del laboratorio.
+  Il disco non viene toccato. I risultati vanno sulla partizione EFI, perché un sistema del 2017 non apre LUKS2.
+- **Due assi di misura:**
+  - *sistema dell'epoca*: kernel e programmi dell'epoca (compressione, Python, SQLite, compilazione C, avvio);
+  - *solo il kernel*: lo stesso benchmark statico moderno su ogni kernel, per isolare l'evoluzione di
+    scheduler, gestione energetica e mitigazioni.
+- **Metriche:** tempo di avvio, RAM a riposo, consumo a riposo a batteria, prestazioni, latenza.
+- **Rischi:** binari dell'epoca non più in cache (si ricompilano su un builder remoto) e sorgenti scomparsi
+  (tarballs.nixos.org, Software Heritage).
+- **Prodotto:** grafici "anno di rilascio → metrica" sullo stesso hardware, e una risposta misurata alla domanda
+  "il software è diventato più lento?".
+
+## 12. Un sistema che cambia personalità da solo
+**Domanda:** un sistema che riconosce cosa stai facendo e si riconfigura al volo batte i profili fissi?
+
+- **Riconoscimento dell'attività:** processi attivi, pressione PSI, I/O, rete, schermo; eventualmente un
+  piccolo classificatore addestrato sui dati della scatola nera (filone 14).
+- **Leve a caldo, senza riavvio:** scheduler sched_ext (si sostituisce mentre il sistema gira, con `scxctl`),
+  governor ed EPB, frequenze della GPU, curva della ventola (filone 4), priorità dei processi.
+- **Valutazione:** carichi registrati e rigiocati (compilazione + navigazione + video) con profilo adattivo
+  contro ogni profilo fisso. Metriche: latenza percepita (tempo di risposta dell'input), throughput, watt.
+- **Prodotto:** un demone come modulo NixOS, con il confronto che dice se vale la complessità.
+
+## 13. Il gemello digitale del T430
+**Domanda:** si può prevedere temperatura, consumo e autonomia di un carico prima di eseguirlo?
+
+- Unisce i modelli dei filoni 3 (energia) e 4 (termica) e la mappa dell'atlas in un simulatore: in ingresso un
+  profilo di carico (CPU, GPU, I/O, schermo), in uscita le curve previste di temperatura, watt e batteria.
+- **Validazione:** prima la previsione, poi la misura reale; l'errore medio è il punteggio del modello.
+- **Uso:** domande "what-if" (quanta autonomia con questo lavoro? quale profilo tiene la CPU sotto 80 °C?)
+  e un banco di prova per il filone 12, che può provare strategie sul gemello prima che sulla macchina.
+
+## 14. La scatola nera
+**Domanda:** si può diagnosticare ogni rallentamento il giorno dopo, senza doverlo riprodurre?
+
+- **Fatto:** `lab-blackbox` è già nel sistema e parte all'avvio. Tiene in memoria 30 minuti di campioni
+  (PSI, temperature, frequenza, watt, throttling, processi più attivi e bloccati in I/O). Si apre da sola
+  quando il kernel segnala uno stallo tramite i trigger PSI o quando la CPU va in throttling. Le registrazioni
+  finiscono in ~/lab/blackbox (prima, dopo, processi, log del kernel). Apertura manuale: `lab-blackbox-dump`.
+  Collaudata il 2026-11-20: il kernel la sveglia entro pochi secondi da uno stallo di CPU indotto.
+- **Prossimi passi:** sonde eBPF (bpftrace) attivate solo durante l'apertura, per vedere *dove* il kernel
+  aspettava (latenza dello scheduler, I/O a blocchi, page fault); analisi automatica la mattina dopo,
+  con una voce in NOTEBOOK.md per ogni evento.
+
+## 15. Il record d'avvio
+**Domanda:** quanto può essere veloce, dall'accensione al desktop, un portatile del 2012?
+
+- **Fase software:** `systemd-analyze` (blame, critical-chain, plot) e bootchart; ogni millisecondo attribuito.
+  Leve: initrd minimo, compressione del kernel, servizi in parallelo, avvio diretto senza GRUB (EFI stub).
+- **Fase firmware** (dopo coreboot, decide Alessandro): cache dell'inizializzazione della RAM, payload minimo,
+  oppure Linux come payload, che salta del tutto il bootloader.
+- **Prodotto:** la cronologia di ogni tentativo, da "accensione → desktop" com'è oggi fino al record finale,
+  con il budget di tempo per ogni fase.
+
+## 16. Evoluzione del kernel
+**Domanda:** un algoritmo genetico trova una configurazione del kernel migliore di quelle scritte a mano?
+
+- **Genoma:** un sottoinsieme di opzioni Kconfig rilevanti (scheduler, preemption, timer, frequenza di tick,
+  compressione, mitigazioni, moduli presenti). Ogni individuo è un kernel costruito da Nix, quindi riproducibile al bit.
+- **Fitness:** tempo di avvio, RAM, latenza (`cyclictest`), throughput, watt a riposo, misurati sulla macchina vera.
+- **Pratica:** si compila su un builder remoto più potente; il T430 avvia e misura una generazione dopo l'altra
+  (`nixos-rebuild boot` + riavvio automatico), con il turno notturno che fa girare il ciclo.
+- **Prodotto:** il kernel "evoluto", la storia dell'evoluzione e quali opzioni si sono rivelate davvero decisive.
+
+## 17. Il paper
+**Domanda:** tutto questo regge come lavoro scientifico?
+
+- Alla fine di ogni grande filone, un capitolo scritto da Claude con metodo, dati, grafici e limiti.
+- Il risultato finale è un rapporto unico, "Ottimizzare un ThinkPad del 2012 nel 2027", pubblicato come sito
+  statico generato dal repo, con ogni grafico rigenerabile dai dati.
+
+---
+
 ## Regole del programma
-- Dati grezzi in ~/lab (atlas, ec, power, results), analisi e conclusioni nel repo (`docs/`, `NOTEBOOK.md`).
+- Dati grezzi in ~/lab (atlas, ec, power, results, blackbox), analisi e conclusioni nel repo (`docs/`, `NOTEBOOK.md`).
+- **Il repo è pubblico.** Gli atlas contengono numeri di serie, indirizzi MAC e il firmware Lenovo (proprietario):
+  i dati grezzi non entrano mai nel repo. Nel repo vanno solo risultati aggregati e anonimizzati.
 - Ogni affermazione nei documenti rimanda ai dati che la sostengono. "Sembra" non è un risultato.
 - Lettura libera di qualsiasi registro. Scrittura su EC e MSR solo nei filoni 2 e 4, con watchdog attivo.
   Scrittura sulla flash SPI mai (vedi docs/hardware.md: la fa Alessandro, con dump di backup).

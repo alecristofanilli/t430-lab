@@ -7,10 +7,12 @@ esperimenti di ottimizzazione misurati, e Claude come ricercatore residente con 
 flake.nix
 ├─ hosts/t430/        disko (GPT + LUKS2 + btrfs), hardware
 ├─ modules/           base · impermanence · desktop (sway) · home (home-manager)
-│                     power (TLP, thinkfan) · performance · experiments · deep · research · lab · agent
+│                     power (TLP, thinkfan) · performance · experiments · deep · blackbox
+│                     research · lab · agent
 ├─ pkgs/ + bench/     lab-snapshot · lab-compare · lab-try · lab-keep · lab-fs-diff
 │                     lab-atlas · lab-atlas-diff · lab-ec-watch · lab-power-trace · lab-limits
 ├─ shells/            datascience · julia · r · re · bench
+├─ archeologia/       sistemi NixOS di altre epoche avviabili in RAM
 ├─ docs/              programma di ricerca, hardware e firmware, progetti di riferimento
 ├─ CLAUDE.md          metodo e backlog per Claude sulla macchina
 └─ NOTEBOOK.md        diario degli esperimenti
@@ -28,6 +30,9 @@ flake.nix
 - **Analisi fino al bit**: `lab-atlas` fotografa la macchina registro per registro, `lab-ec-watch` decifra
   l'embedded controller, `lab-power-trace` scompone i consumi per componente. Il programma completo è in
   `docs/programma-ricerca.md`.
+- **Sperimentazione pionieristica** (Parte II del programma): archeologia del software su NixOS dal 2017 a oggi,
+  sistema che si riconfigura da solo, gemello digitale, scatola nera sempre attiva, record d'avvio, evoluzione
+  genetica del kernel.
 - **Claude sulla macchina**: Claude Code installato, sudo senza password (macchina di test), turno notturno
   opzionale in cui porta avanti il backlog da solo.
 

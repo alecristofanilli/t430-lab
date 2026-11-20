@@ -1,3 +1,9 @@
 result
 result-*
 .direnv/
+# dati grezzi del laboratorio: contengono seriali, MAC e firmware proprietario (il repo è pubblico)
+/lab/
+*.bin
+*.dat
+*.rom
+spi-flash*

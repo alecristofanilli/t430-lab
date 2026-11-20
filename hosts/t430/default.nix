@@ -14,6 +14,7 @@
     ../../modules/agent.nix
     ../../modules/experiments.nix
     ../../modules/deep.nix
+    ../../modules/blackbox.nix
   ];
 
   networking.hostName = "t430";
