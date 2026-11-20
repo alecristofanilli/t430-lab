@@ -48,14 +48,14 @@ sudo -i
 NIXPKGS_ALLOW_UNFREE=1 nix --extra-experimental-features "nix-command flakes" run --impure nixpkgs#claude-code
 ```
 Fai il login (Claude Code ti dà un link da aprire sul telefono o sul PC), poi digli:
-> Clona github.com/<tuo-utente>/t430-lab e installa NixOS seguendo il README, sezione Opzione B.
+> Clona github.com/alecristofanilli/t430-lab e installa NixOS seguendo il README, sezione Opzione B.
 > Il disco da usare è quello che ti indico dopo aver visto `lsblk`.
 
 ### Opzione B — a mano
 ```bash
 sudo -i
 nix-shell -p git
-git clone https://github.com/<tuo-utente>/t430-lab /tmp/t430-lab && cd /tmp/t430-lab
+git clone https://github.com/alecristofanilli/t430-lab /tmp/t430-lab && cd /tmp/t430-lab
 
 lsblk   # se il disco non è /dev/sda, aggiorna `device` in hosts/t430/disko.nix
 
