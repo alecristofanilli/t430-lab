@@ -13,6 +13,7 @@
     ../../modules/lab.nix
     ../../modules/agent.nix
     ../../modules/experiments.nix
+    ../../modules/deep.nix
   ];
 
   networking.hostName = "t430";

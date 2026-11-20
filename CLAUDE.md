@@ -17,6 +17,7 @@ ipotesi, misura e conclusione, e deve restare reversibile.
 - `modules/performance.nix` — tuning dietro `lab.tuning.enable`
 - `modules/experiments.nix` — specialisations: vanilla (controllo), perf, battery
 - `modules/agent.nix` — sudo senza password, turno notturno opzionale (`lab.agent.nightly`)
+- `modules/deep.nix` — strumenti di analisi a basso livello + voce GRUB `deep` (iomem=relaxed, ec_sys)
 - `modules/home.nix` — dotfile con home-manager
 - `pkgs/` + `bench/` — strumenti del laboratorio
 - `shells/` — ambienti di ricerca (`nix develop .#datascience` ecc.)
@@ -29,6 +30,11 @@ ipotesi, misura e conclusione, e deve restare reversibile.
 | `lab-try [minuti]` | applica la config in prova con **revert automatico** (default 5 min) |
 | `lab-keep` | conferma la config in prova e la rende permanente |
 | `lab-fs-diff` | file scritti nella root effimera da questo avvio (stato non dichiarato) |
+| `lab-atlas <etichetta>` | fotografia completa fino ai registri: SMBIOS, CPUID, MSR, PCI config space, ACPI, EC, EDID, SPD, RAPL; con la voce `deep` anche flash SPI, chipset, ME, chipsec |
+| `lab-atlas-diff A B` | differenze tra due atlas, binari compresi (byte e bit cambiati) |
+| `lab-ec-watch [s] [durata]` | registra ogni byte della RAM dell'EC che cambia (voce `deep`) |
+| `lab-power-trace [s] [durata]` | CSV di consumo: batteria + RAPL package/core/GPU + resto stimato |
+| `nix develop .#re` | reverse engineering: Ghidra, radare2, rizin, ImHex, UEFITool, binwalk |
 | `nvd diff /run/booted-system /run/current-system` | cosa è cambiato tra generazioni |
 
 ## Metodo (obbligatorio)
@@ -41,9 +47,17 @@ ipotesi, misura e conclusione, e deve restare reversibile.
 5. **Decidi**: beneficio misurabile → `lab-keep`, commit e voce in NOTEBOOK.md.
    Nessun beneficio → revert, voce in NOTEBOOK.md comunque (anche i risultati negativi sono risultati).
 
+## Programma di ricerca
+Il backlog qui sotto è la parte "sistema". La parte "analisi profonda" è in **docs/programma-ricerca.md**:
+atlante hardware differenziale, mappa dell'EC, modello energetico, controllo predittivo della ventola,
+kernel su misura, ottimizzazione automatica, audit del firmware, DRAM. Lavora su entrambi.
+
 ## Limiti (gli unici)
 - Non toccare partizioni, LUKS, `/persist/secrets` e i dati in `/home` senza chiedere ad Alessandro.
-- Firmware e hardware: solo lui. Puoi preparare script e guide, non eseguire flash.
+- Firmware e hardware: solo lui. Puoi leggere la flash SPI (`flashrom -r`), mai scriverla.
+- Scritture su registri EC o MSR: solo per i filoni 2 e 4 del programma, solo con un watchdog che ripristina
+  il controllo automatico della ventola e una soglia termica (es. 90 °C) che interrompe l'esperimento.
+  Prima di scrivere un MSR mai provato, annota in NOTEBOOK.md cosa ti aspetti e come torni indietro.
 - Niente stato imperativo fuori dal repo (`nix-env -i`, file a mano in /etc): se serve, è Nix.
 - Prima di disattivare la rete o SSH in modo permanente, chiedi.
 

@@ -44,6 +44,30 @@
     ];
   };
 
+  # Reverse engineering di firmware, EC e dump (`nix develop .#re`)
+  re = pkgs.mkShell {
+    packages = with pkgs; [
+      ghidra
+      radare2
+      rizin
+      cutter
+      imhex
+      binwalk
+      uefitool
+      coreboot-utils
+      me_cleaner
+      xxd
+      (python3.withPackages (
+        ps: with ps; [
+          capstone
+          pandas
+          numpy
+          matplotlib
+        ]
+      ))
+    ];
+  };
+
   # Analisi dei risultati di lab-snapshot (grafici prima/dopo)
   bench = pkgs.mkShell {
     packages = with pkgs; [
